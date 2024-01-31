@@ -91,7 +91,6 @@ def topic_modelling(dubby):
         print(f"Topic #{topic_idx + 1}: {', '.join(top_words)}")
         topic_res.append(f"Topic #{topic_idx + 1}: {', '.join(top_words)}")
     summary=summerize(lda_dtf,dubby)
-    print(topic_res)
     return topic_res,summary
     
     
@@ -130,9 +129,10 @@ class SummerizeModel(APIView):
                 respose_dict={'status':status,'error_msg':error_msg,'topics':topicRes,'summary':summary}
                 return JsonResponse(respose_dict)
             
+            status= False
             return Response(
                 serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
+                status=status
             )
         except Exception as e:
             status=False  
