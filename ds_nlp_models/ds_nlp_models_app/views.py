@@ -19,9 +19,10 @@ from .service import churnPrediction
 from rest_framework.response import Response  
 from django.http import FileResponse
 from django.http import HttpResponse
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404,StreamingHttpResponse
 import time
-
+import mimetypes
+from wsgiref.util import FileWrapper
 
 import re
 
@@ -151,19 +152,20 @@ class ChurnPredictionModel(APIView):
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 uploaded_file = request.FILES['file']
-                churnPrediction.dataPreprocessing(uploaded_file)
+                final_df=churnPrediction.dataPreprocessing(uploaded_file)
                 status = True
                 error_msg = ""
                 respose_dict={'status':status,'error_msg':error_msg,'response':'Chur prediction completed'}
+                os.makedirs("./Prediction", exist_ok=True)
                 timestr = time.strftime("%Y%m%d-%H%M%S")
+                
                 path=f'./Prediction/submission_telecom_case_study_test{timestr}.csv'
-                if os.path.exists(path):
-                    with open(path, 'rb') as fh:
-                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-                        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
-                        return response
-                else:
-                    raise Http404
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename='+os.path.basename(path) 
+                # Name the CSV response
+                final_df.to_csv(response, encoding='utf-8', index=False)
+                return response
+
         except Exception as e:
             status=False  
             error_msg=str(e) 
@@ -175,11 +177,14 @@ class GetChurnPredictionOutputFile(APIView):
         path="./Prediction/submission_telecom_case_study_test.csv"
         if os.path.exists(path):
             with open(path, 'rb') as fh:
-                 response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-                 response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
+                 response = HttpResponse(fh.read(), mimetype="text/csv")
+                 response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(path)
                  return response
         else:
-            raise Http404
+            status=False  
+            error_msg=str("File Not found") 
+            respose_dict={'status':status,'error_msg':error_msg}
+            return JsonResponse(respose_dict) 
 
     
    
