@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import os
+import time
 
 
 def load_models():
@@ -105,7 +106,9 @@ def dataPreprocessing(uploaded_file):
     cols = cols[-1:] + cols[:-1]
     final_df = final_df[cols]
     os.makedirs("./Prediction", exist_ok=True)
-    final_df.to_csv('./Prediction/submission_telecom_case_study_test.csv', index=False)
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    path=f'./Prediction/submission_telecom_case_study_test{timestr}.csv'
+    final_df.to_csv(path, index=False)
     
     
     

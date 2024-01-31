@@ -20,7 +20,7 @@ from rest_framework.response import Response
 from django.http import FileResponse
 from django.http import HttpResponse
 from django.http import HttpResponse, Http404
-
+import time
 
 
 import re
@@ -155,14 +155,18 @@ class ChurnPredictionModel(APIView):
                 status = True
                 error_msg = ""
                 respose_dict={'status':status,'error_msg':error_msg,'response':'Chur prediction completed'}
-                return JsonResponse(respose_dict);
+                timestr = time.strftime("%Y%m%d-%H%M%S")
+                path=f'./Prediction/submission_telecom_case_study_test{timestr}.csv'
+                if os.path.exists(path):
+                    with open(path, 'rb') as fh:
+                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+                        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
+                        return response
+                else:
+                    raise Http404
         except Exception as e:
             status=False  
             error_msg=str(e) 
-            print("Error :")
-            print(e) 
-            summary=""
-            topicRes=[]
             respose_dict={'status':status,'error_msg':error_msg}
             return JsonResponse(respose_dict) 
 class GetChurnPredictionOutputFile(APIView):
