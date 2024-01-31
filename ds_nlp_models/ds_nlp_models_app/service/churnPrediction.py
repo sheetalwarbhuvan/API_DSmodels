@@ -4,7 +4,8 @@ import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-
+import os
+import time
 
 
 def load_models():
@@ -97,9 +98,12 @@ def dataPreprocessing(uploaded_file):
     # Predicting on the Test data using the best Random Forest Algorithm
     result = sample_df.predict(submission_data)
     final_df = pd.DataFrame(result, columns=['churn_probability'])
-    # Include the 'id' column in the final DataFrame
     final_df['id'] = unseen['id']
     merged_df = pd.merge(unseen, final_df, on='id')
+    os.makedirs("./Prediction", exist_ok=True)
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    path=f'./Prediction/submission_telecom_case_study_test{timestr}.csv'
+    merged_df.to_csv(path, index=False)
     return merged_df
     
     

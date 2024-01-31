@@ -156,14 +156,12 @@ class ChurnPredictionModel(APIView):
                 status = True
                 error_msg = ""
                 respose_dict={'status':status,'error_msg':error_msg,'response':'Chur prediction completed'}
-                os.makedirs("./Prediction", exist_ok=True)
                 timestr = time.strftime("%Y%m%d-%H%M%S")
-                
                 path=f'./Prediction/submission_telecom_case_study_test{timestr}.csv'
                 response = HttpResponse(content_type='text/csv')
                 response['Content-Disposition'] = 'attachment; filename='+os.path.basename(path) 
                 # Name the CSV response
-                final_df.to_csv(response, encoding='utf-8', index=False)
+                final_df.to_csv(path_or_buf=response, encoding='utf-8', index=False)
                 return response
 
         except Exception as e:
