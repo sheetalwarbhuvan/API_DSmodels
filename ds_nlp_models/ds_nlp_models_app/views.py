@@ -16,6 +16,11 @@ import os
 import PyPDF2
 import fpdf
 from .service import churnPrediction
+from rest_framework.response import Response  
+from django.http import FileResponse
+from django.http import HttpResponse
+from django.http import HttpResponse, Http404
+
 
 
 import re
@@ -136,6 +141,7 @@ class SummerizeModel(APIView):
             respose_dict={'status':status,'error_msg':error_msg,'topics':topicRes,'summary':summary}
             return JsonResponse(respose_dict) 
 
+
 class ChurnPredictionModel(APIView):
     queryset = UploadedFile.objects.all()
     serializer_class = FileUploadSerializer
@@ -159,6 +165,18 @@ class ChurnPredictionModel(APIView):
             topicRes=[]
             respose_dict={'status':status,'error_msg':error_msg}
             return JsonResponse(respose_dict) 
+class GetChurnPredictionOutputFile(APIView):
+ 
+    def post(self,request): 
+        path="./Prediction/submission_telecom_case_study_test.csv"
+        if os.path.exists(path):
+            with open(path, 'rb') as fh:
+                 response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+                 response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
+                 return response
+        else:
+            raise Http404
+
     
    
 
