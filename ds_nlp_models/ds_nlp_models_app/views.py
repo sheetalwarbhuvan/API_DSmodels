@@ -15,14 +15,13 @@ from sklearn.feature_extraction import _stop_words
 import os
 import PyPDF2
 import fpdf
-from .service import churnPrediction
+from .service import churnPrediction,translateService
 from rest_framework.response import Response  
 from django.http import FileResponse
 from django.http import HttpResponse
 from django.http import HttpResponse, Http404,StreamingHttpResponse
 import time
-import mimetypes
-from wsgiref.util import FileWrapper
+from rest_framework import status
 
 import re
 
@@ -124,22 +123,19 @@ class SummerizeModel(APIView):
                 topicRes,summary=topic_modelling(dubby)
                 
                 #return the payload 
-                status = True
                 error_msg = ""
-                respose_dict={'status':status,'error_msg':error_msg,'topics':topicRes,'summary':summary}
+                respose_dict={'status':status.HTTP_200_OK,'error_msg':error_msg,'topics':topicRes,'summary':summary}
                 return JsonResponse(respose_dict)
             
-            status= False
             return Response(
                 serializer.errors,
-                status=status
+                status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            status=False  
             error_msg=str(e)  
             summary=""
             topicRes=[]
-            respose_dict={'status':status,'error_msg':error_msg,'topics':topicRes,'summary':summary}
+            respose_dict={'status':status.HTTP_400_BAD_REQUEST,'error_msg':error_msg,'topics':topicRes,'summary':summary}
             return JsonResponse(respose_dict) 
 
 
@@ -153,7 +149,6 @@ class ChurnPredictionModel(APIView):
             if serializer.is_valid():
                 uploaded_file = request.FILES['file']
                 final_df=churnPrediction.dataPreprocessing(uploaded_file)
-                status = True
                 error_msg = ""
                 respose_dict={'status':status,'error_msg':error_msg,'response':'Chur prediction completed'}
                 timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -164,10 +159,9 @@ class ChurnPredictionModel(APIView):
                 final_df.to_csv(path_or_buf=response, encoding='utf-8', index=False)
                 return response
 
-        except Exception as e:
-            status=False  
+        except Exception as e: 
             error_msg=str(e) 
-            respose_dict={'status':status,'error_msg':error_msg}
+            respose_dict={'status':status.HTTP_400_BAD_REQUEST,'error_msg':error_msg}
             return JsonResponse(respose_dict) 
 class GetChurnPredictionOutputFile(APIView):
  
@@ -178,14 +172,35 @@ class GetChurnPredictionOutputFile(APIView):
                  response = HttpResponse(fh.read(), mimetype="text/csv")
                  response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(path)
                  return response
-        else:
-            status=False  
+        else: 
             error_msg=str("File Not found") 
-            respose_dict={'status':status,'error_msg':error_msg}
+            respose_dict={'status':status.HTTP_400_BAD_REQUEST,'error_msg':error_msg}
             return JsonResponse(respose_dict) 
-
-    
-   
+        
+class TranslateModel(APIView):
+    queryset = TranslateModel.objects.all()
+    serializer_class=TranslateModelSerializer
+    parser_classes = (MultiPartParser, FormParser,)
+  
+    def post(self,request): 
+        try:
+             serializer = self.serializer_class(data=request.data)
+             if serializer.is_valid():
+                file= request.FILES['file']
+                language=request.data['language']
+                data=translateService.translateDoc(file,language)
+                error_msg = ""
+                respose_dict={'status':status.HTTP_200_OK,'error_msg':error_msg,"source Language":language,"translation":data}
+                return JsonResponse(respose_dict)
+             return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+             )
+        except Exception as e:
+            error_msg=str(e)  
+            translation=""
+            respose_dict={'status':status.HTTP_400_BAD_REQUEST ,'error_msg':error_msg,"source Language":"",'translation':translation}
+            return JsonResponse(respose_dict) 
 
 
 
