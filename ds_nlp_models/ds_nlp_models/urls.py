@@ -20,8 +20,9 @@ import ds_nlp_models_app.views as views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('summerize/',views.SummerizeModel.as_view(),name='summerize'),
-    path('churnPredict/',views.ChurnPredictionModel.as_view(),name='churnPredict'),
-    path('getFile/',views.GetChurnPredictionOutputFile.as_view(),name='getFile'),
-     path('translate/',views.TranslateModel.as_view(),name='translate')
+    path('topicmodelling',views.SummerizeModel.as_view(),name='summerize'),
+    path('churnPredict',views.ChurnPredictionModel.as_view(),name='churnPredict'),
+    path('getFile',views.GetChurnPredictionOutputFile.as_view(),name='getFile'),
+     path('translate',views.TranslateModel.as_view(),name='translate'),
+       path('pdf-summary',views.SummaryModel.as_view(),name='pdf-summary')
 ]

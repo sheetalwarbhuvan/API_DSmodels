@@ -21,4 +21,7 @@ class PredictionModel(models.Model):
     
     def __str__(self):
         return self.uploaded_on.date()
+
+class SummaryModel(models.Model):
+    file = models.FileField(upload_to='content')
     

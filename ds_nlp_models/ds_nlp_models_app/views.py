@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from django.http import  JsonResponse
 from rest_framework.views import APIView
 from rest_framework import status
-from .serializer import FileUploadSerializer,TranslateModelSerializer
-from .models import UploadedFile,TranslateModel
+from .serializer import FileUploadSerializer,TranslateModelSerializer,MultipleFileUploadSerializer
+from .models import UploadedFile,TranslateModel,SummaryModel
 from rest_framework.parsers import FormParser, MultiPartParser
 import pandas as pd
 import numpy as np
@@ -15,7 +15,7 @@ from sklearn.feature_extraction import _stop_words
 import os
 import PyPDF2
 import fpdf
-from .service import churnPrediction,translateService
+from .service import churnPrediction, pdfSummaryService, translateService
 from rest_framework.response import Response  
 from django.http import FileResponse
 from django.http import HttpResponse
@@ -38,9 +38,9 @@ def cleanExtractedData(text_file):
     dubby=[re.sub("[^a-zA-Z]+", " ", s) for s in shearss]
     print(dubby)
     return dubby
-
+ 
 def filePreprocessing(file):
-     # Directory for storing PDF files
+    # Directory for storing PDF files
     pdf_directory = './content/pdf_files'
     # Directory for storing extracted text from PDFs
     text_directory = './content/extracted_text'
@@ -201,6 +201,31 @@ class TranslateModel(APIView):
             translation=""
             respose_dict={'status':status.HTTP_400_BAD_REQUEST ,'error_msg':error_msg,"source Language":"",'translation':translation}
             return JsonResponse(respose_dict) 
+        
+class SummaryModel(APIView):
+    queryset = SummaryModel.objects.all()
+    serializer_class=MultipleFileUploadSerializer
+    parser_classes = (MultiPartParser, FormParser,)
+    def post(self,request): 
+        try:
+              serializer = self.serializer_class(data=request.data)
+              if serializer.is_valid():
+                   file= request.FILES.getlist('file')
+                   data=pdfSummaryService.pdfSummary(file)
+                   print(data)
+                   error_msg = ""
+                   respose_dict={'status':status.HTTP_200_OK,'error_msg':error_msg,"pdf-summary":data}
+                   return JsonResponse(respose_dict)
+              return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+             )
+        except Exception as e:
+            error_msg=str(e)  
+            translation=""
+            respose_dict={'status':status.HTTP_400_BAD_REQUEST ,'error_msg':error_msg,"pdf-summary":""}
+            return JsonResponse(respose_dict) 
+                
 
 
 
