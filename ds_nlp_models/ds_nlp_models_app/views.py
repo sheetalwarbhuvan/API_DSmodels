@@ -226,7 +226,10 @@ class SummaryModel(APIView):
             respose_dict={'status':status.HTTP_400_BAD_REQUEST ,'error_msg':error_msg,"pdf-summary":""}
             return JsonResponse(respose_dict) 
                 
-
+class HealthCheckModel(APIView):
+     def get(self, request):
+         text="Server Working"
+         return Response(text, status=status.HTTP_200_OK)
 
 
 # Create your views here.

@@ -24,5 +24,7 @@ urlpatterns = [
     path('churnPredict',views.ChurnPredictionModel.as_view(),name='churnPredict'),
     path('getFile',views.GetChurnPredictionOutputFile.as_view(),name='getFile'),
      path('translate',views.TranslateModel.as_view(),name='translate'),
-       path('pdf-summary',views.SummaryModel.as_view(),name='pdf-summary')
+       path('pdf-summary',views.SummaryModel.as_view(),name='pdf-summary'),
+        path('actuator/health',views.HealthCheckModel.as_view(),name='actuator/health')
+      
 ]
