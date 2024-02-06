@@ -17,6 +17,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 import ds_nlp_models_app.views as views
+from rest_framework_swagger.views import get_swagger_view
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Episyche Technologies",
+        default_version='v1',),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+    
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,6 +40,13 @@ urlpatterns = [
     path('getFile',views.GetChurnPredictionOutputFile.as_view(),name='getFile'),
      path('translate',views.TranslateModel.as_view(),name='translate'),
        path('pdf-summary',views.SummaryModel.as_view(),name='pdf-summary'),
-        path('actuator/health',views.HealthCheckModel.as_view(),name='actuator/health')
+        path('actuator/health',views.HealthCheckModel.as_view(),name='actuator/health'),
+        path('docs/', schema_view.with_ui('swagger', cache_timeout=0),name='schema-swagger-ui'),
+        path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Optional UI:
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
+
       
 ]

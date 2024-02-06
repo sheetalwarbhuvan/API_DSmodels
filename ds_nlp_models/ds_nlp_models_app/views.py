@@ -13,6 +13,8 @@ from sklearn.feature_extraction.text import CountVectorizer,TfidfVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction import _stop_words
 import os
+from drf_yasg import openapi
+
 import PyPDF2
 import fpdf
 from .service import churnPrediction, pdfSummaryService, translateService
@@ -22,8 +24,13 @@ from django.http import HttpResponse
 from django.http import HttpResponse, Http404,StreamingHttpResponse
 import time
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
+
 
 import re
+
 
 
 def cleanExtractedData(text_file):
@@ -112,8 +119,19 @@ class SummerizeModel(APIView):
     queryset = UploadedFile.objects.all()
     serializer_class = FileUploadSerializer
     parser_classes = (MultiPartParser, FormParser,)
-  
-    def post(self,request):
+    @extend_schema(
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                     'file': {
+                         'type': 'string',
+                        'format': 'binary'
+                     }
+                }
+            }
+        })
+    def post(self,request,**kwargs):
         try:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
@@ -143,21 +161,39 @@ class ChurnPredictionModel(APIView):
     queryset = UploadedFile.objects.all()
     serializer_class = FileUploadSerializer
     parser_classes = (MultiPartParser, FormParser,)
-    def post(self,request):
+    @extend_schema(
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                     'file': {
+                         'type': 'string',
+                        'format': 'binary'
+                     }
+                }
+            }
+        })
+    def post(self,request,**kwargs):
         try:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 uploaded_file = request.FILES['file']
                 final_df=churnPrediction.dataPreprocessing(uploaded_file)
-                error_msg = ""
-                respose_dict={'status':status,'error_msg':error_msg,'response':'Chur prediction completed'}
-                timestr = time.strftime("%Y%m%d-%H%M%S")
-                path=f'./Prediction/submission_telecom_case_study_test{timestr}.csv'
-                response = HttpResponse(content_type='text/csv')
-                response['Content-Disposition'] = 'attachment; filename='+os.path.basename(path) 
-                # Name the CSV response
-                final_df.to_csv(path_or_buf=response, encoding='utf-8', index=False)
-                return response
+                if final_df is not None:
+                    error_msg = ""
+                    respose_dict={'status':status,'error_msg':error_msg,'response':'Chur prediction completed'}
+                    timestr = time.strftime("%Y%m%d-%H%M%S")
+                    path=f'./Prediction/submission_telecom_case_study_test{timestr}.csv'
+                    response = HttpResponse(content_type='text/csv')
+                    response['Content-Disposition'] = 'attachment; filename='+os.path.basename(path) 
+                    # Name the CSV response
+                    final_df.to_csv(path_or_buf=response, encoding='utf-8', index=False)
+                    return response
+                else:
+                     error_msg = "Please upload csv file"
+                     respose_dict={'status':status.HTTP_400_BAD_REQUEST ,'error_msg':error_msg}
+                     return JsonResponse(respose_dict) 
+                     
 
         except Exception as e: 
             error_msg=str(e) 
@@ -165,7 +201,7 @@ class ChurnPredictionModel(APIView):
             return JsonResponse(respose_dict) 
 class GetChurnPredictionOutputFile(APIView):
  
-    def post(self,request): 
+    def post(self,request,**kwargs): 
         path="./Prediction/submission_telecom_case_study_test.csv"
         if os.path.exists(path):
             with open(path, 'rb') as fh:
@@ -181,8 +217,26 @@ class TranslateModel(APIView):
     queryset = TranslateModel.objects.all()
     serializer_class=TranslateModelSerializer
     parser_classes = (MultiPartParser, FormParser,)
-  
-    def post(self,request): 
+   
+        
+    @extend_schema(
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                     'file': {
+                         'type': 'string',
+                        'format': 'binary'
+                     },
+                     'language': {
+                         'type': 'string',
+                        'format': 'string'
+                     }
+                }
+            }
+        })
+           
+    def post(self,request,**kwargs): 
         try:
              serializer = self.serializer_class(data=request.data)
              if serializer.is_valid():
@@ -190,8 +244,13 @@ class TranslateModel(APIView):
                 language=request.data['language']
                 data=translateService.translateDoc(file,language)
                 error_msg = ""
-                respose_dict={'status':status.HTTP_200_OK,'error_msg':error_msg,"source Language":language,"translation":data}
-                return JsonResponse(respose_dict)
+                if data is not None:
+                    respose_dict={'status':status.HTTP_200_OK,'error_msg':error_msg,"source Language":language,"translation":data}
+                    return JsonResponse(respose_dict)
+                else:
+                    
+                    respose_dict={'error_msg':"please check provided file and source language","status":status.HTTP_400_BAD_REQUEST}
+                    return JsonResponse(respose_dict)
              return Response(
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
@@ -206,7 +265,21 @@ class SummaryModel(APIView):
     queryset = SummaryModel.objects.all()
     serializer_class=MultipleFileUploadSerializer
     parser_classes = (MultiPartParser, FormParser,)
-    def post(self,request): 
+    @extend_schema(
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                     'file': {
+                         'type': 'string',
+                        'format': 'binary'
+                     }
+                }
+            }
+        }
+        
+    )
+    def post(self,request,**kwargs): 
         try:
               serializer = self.serializer_class(data=request.data)
               if serializer.is_valid():
@@ -227,7 +300,7 @@ class SummaryModel(APIView):
             return JsonResponse(respose_dict) 
                 
 class HealthCheckModel(APIView):
-     def get(self, request):
+     def get(self, request,**kwargs):
          text="Server Working"
          return Response(text, status=status.HTTP_200_OK)
 

@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: DS API
+  version: 1.0.0
+  description: DS API
+paths:
+  /actuator/health:
+    get:
+      operationId: actuator_health_retrieve
+      tags:
+      - actuator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /churnPredict:
+    post:
+      operationId: churnPredict_create
+      tags:
+      - churnPredict
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FileUpload'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FileUpload'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUpload'
+          description: ''
+  /getFile:
+    post:
+      operationId: getFile_create
+      tags:
+      - getFile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /pdf-summary:
+    post:
+      operationId: pdf_summary_create
+      tags:
+      - pdf-summary
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MultipleFileUpload'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MultipleFileUpload'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultipleFileUpload'
+          description: ''
+  /topicmodelling:
+    post:
+      operationId: topicmodelling_create
+      tags:
+      - topicmodelling
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FileUpload'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FileUpload'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUpload'
+          description: ''
+  /translate:
+    post:
+      operationId: translate_create
+      tags:
+      - translate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TranslateModel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TranslateModel'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslateModel'
+          description: ''
+components:
+  schemas:
+    FileUpload:
+      type: object
+      properties:
+        file:
+          type: string
+          format: uri
+        uploaded_on:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - file
+      - uploaded_on
+    MultipleFileUpload:
+      type: object
+      properties:
+        file:
+          type: string
+          format: uri
+      required:
+      - file
+    TranslateModel:
+      type: object
+      properties:
+        file:
+          type: string
+          format: uri
+        uploaded_on:
+          type: string
+          format: date-time
+          readOnly: true
+        language:
+          type: string
+          maxLength: 50
+      required:
+      - file
+      - language
+      - uploaded_on
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
