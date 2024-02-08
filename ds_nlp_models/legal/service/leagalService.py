@@ -1,5 +1,7 @@
  
 from re import A
+from docx import Document
+from datetime import datetime
 
 from langchain_community import vectorstores
 # from langchain_community.schema import prompt
@@ -15,16 +17,20 @@ from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.llms import HuggingFaceHub
 from langchain_community.document_loaders import PyPDFLoader
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 from langchain_community.llms import HuggingFaceHub
 from transformers import pipeline
 import numpy as np
 
+
 import pandas as pd
 from langchain_community.document_loaders import PyPDFLoader
 import re
 from langchain.schema.output import LLMResult
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import T5Tokenizer, T5ForConditionalGeneration,AutoTokenizer
+
+from_tf=True
 # Function to generate "Statement of Work" text based on user inputs
 def generate_statement_of_work(company_name, vendor_name, effective_date, agreement_date):
     statement_of_work = (
