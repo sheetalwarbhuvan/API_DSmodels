@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'rest_framework',
     'ds_nlp_models_app',
+    'legal',
     'drf_yasg',
     'drf_spectacular',
     'drf_spectacular_sidecar'
@@ -75,6 +76,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ds_nlp_models.wsgi.application'
+
 
 
 # Database

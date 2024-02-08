@@ -15,9 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path,include
 import ds_nlp_models_app.views as views
-from rest_framework_swagger.views import get_swagger_view
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -26,7 +25,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Episyche Technologies",
+        title="AeriesOne",
         default_version='v1',),
     public=True,
     permission_classes=(permissions.AllowAny,),
@@ -38,8 +37,10 @@ urlpatterns = [
     path('topicmodelling',views.SummerizeModel.as_view(),name='summerize'),
     path('churnPredict',views.ChurnPredictionModel.as_view(),name='churnPredict'),
     path('getFile',views.GetChurnPredictionOutputFile.as_view(),name='getFile'),
-     path('translate',views.TranslateModel.as_view(),name='translate'),
-       path('pdf-summary',views.SummaryModel.as_view(),name='pdf-summary'),
+    path('translate',views.TranslateModel.as_view(),name='translate'),
+    path('pdf-summary',views.SummaryModel.as_view(),name='pdf-summary'),
+     path('legal/',include("legal.urls")),
+       
         path('actuator/health',views.HealthCheckModel.as_view(),name='actuator/health'),
         path('docs/', schema_view.with_ui('swagger', cache_timeout=0),name='schema-swagger-ui'),
         path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
