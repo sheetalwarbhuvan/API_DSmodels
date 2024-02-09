@@ -30,7 +30,7 @@ import re
 from langchain.schema.output import LLMResult
 from transformers import T5Tokenizer, T5ForConditionalGeneration,AutoTokenizer
 
-from_tf=True
+
 # Function to generate "Statement of Work" text based on user inputs
 def generate_statement_of_work(company_name, vendor_name, effective_date, agreement_date):
     statement_of_work = (
@@ -91,7 +91,7 @@ def documentCreation(data):
 
             # Tokenize the prompt and generate content
             input_ids = tokenizer(full_prompt, return_tensors="pt").input_ids
-            output = model.generate(input_ids, max_length=500, num_return_sequences=1, temperature=0.7, do_sample=True,from_tf=True)
+            output = model.generate(input_ids, max_length=500, num_return_sequences=1, temperature=0.7, do_sample=True)
         #     output = model.generate(input_ids, max_length=512, num_return_sequences=1, temperature=0.7, do_sample=True, max_new_tokens=1000, eos_token_id=-1)
 
             # Decode and store the generated content
@@ -250,7 +250,7 @@ def llm_get_suggestion():
         repo_id="google/flan-t5-xxl",
         # model_kwargs={"temperature": 0.5, "max_length": 512},
         model_kwargs={"temperature": 0.5, "max_length": 512, "max_new_tokens":1000, "eos_token_id":-1},
-        huggingfacehub_api_token=huggingfacehub_api_token,from_tf=True
+        huggingfacehub_api_token=huggingfacehub_api_token
     )
     return llm
 
@@ -273,7 +273,7 @@ def llm_get_suggestion():
         repo_id="google/flan-t5-xxl",
         # model_kwargs={"temperature": 0.5, "max_length": 512},
         model_kwargs={"temperature": 0.5, "max_length": 512, "max_new_tokens":1000, "eos_token_id":-1},
-        huggingfacehub_api_token=huggingfacehub_api_token,from_tf=True
+        huggingfacehub_api_token=huggingfacehub_api_token
     )
     return llm
 
@@ -363,7 +363,7 @@ def get_conversation_chain(persisted_vectorstore):
         # model_kwargs={"temperature": 0.5,"max_length": 1024},
         # model_kwargs={"temperature": 1,"max_length": 1000000},
         model_kwargs={"temperature": 0.5, "max_length": 1000000, "max_new_tokens":1000000, "eos_token_id":-1},
-        huggingfacehub_api_token=huggingfacehub_api_token,from_tf=True
+        huggingfacehub_api_token=huggingfacehub_api_token
     )
     memory = ConversationBufferMemory(
         memory_key='chat_history', return_messages=True)
