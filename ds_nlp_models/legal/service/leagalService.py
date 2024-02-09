@@ -249,7 +249,7 @@ def llm_get_suggestion():
     llm = HuggingFaceHub(
         repo_id="google/flan-t5-xxl",
         # model_kwargs={"temperature": 0.5, "max_length": 512},
-        model_kwargs={"temperature": 0.5, "max_length": 512, "max_new_tokens":1000, "eos_token_id":-1},
+        model_kwargs={"temperature": 0.5, "max_length": 500, "max_new_tokens":1000, "eos_token_id":-1},
         huggingfacehub_api_token=huggingfacehub_api_token
     )
     return llm
@@ -272,7 +272,7 @@ def llm_get_suggestion():
     llm = HuggingFaceHub(
         repo_id="google/flan-t5-xxl",
         # model_kwargs={"temperature": 0.5, "max_length": 512},
-        model_kwargs={"temperature": 0.5, "max_length": 512, "max_new_tokens":1000, "eos_token_id":-1},
+        model_kwargs={"temperature": 0.5, "max_length": 500, "max_new_tokens":1000, "eos_token_id":-1},
         huggingfacehub_api_token=huggingfacehub_api_token
     )
     return llm
@@ -362,7 +362,7 @@ def get_conversation_chain(persisted_vectorstore):
         
         # model_kwargs={"temperature": 0.5,"max_length": 1024},
         # model_kwargs={"temperature": 1,"max_length": 1000000},
-        model_kwargs={"temperature": 0.5, "max_length": 1000000, "max_new_tokens":1000000, "eos_token_id":-1},
+        model_kwargs={"temperature": 0.5, "max_length": 500, "max_new_tokens":1000, "eos_token_id":-1},
         huggingfacehub_api_token=huggingfacehub_api_token
     )
     memory = ConversationBufferMemory(
