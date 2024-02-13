@@ -1,3 +1,4 @@
+import shutil
 from django.shortcuts import render
 from rest_framework.response import Response 
 from django.http import  JsonResponse
@@ -27,11 +28,23 @@ from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
+import torch
 
 
 import re
 
-
+def removeFolder(folder):
+    if os.path.exists(folder):
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+    shutil.rmtree(folder)
 
 def cleanExtractedData(text_file):
     clean_cont=[]
@@ -138,18 +151,19 @@ class SummerizeModel(APIView):
                 # uploaded_file = serializer.validated_data["file"]
                 # serializer.save()
                 dubby=filePreprocessing(request.FILES['file'])
-                topicRes,summary=topic_modelling(dubby)
-                
+                topicRes,summary=topic_modelling(dubby)             
                 #return the payload 
                 error_msg = ""
                 respose_dict={'status':status.HTTP_200_OK,'error_msg':error_msg,'topics':topicRes,'summary':summary}
+                removeFolder("./content")
                 return JsonResponse(respose_dict)
-            
+
             return Response(
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            removeFolder("./content")
             error_msg=str(e)  
             summary=""
             topicRes=[]
@@ -183,11 +197,12 @@ class ChurnPredictionModel(APIView):
                     error_msg = ""
                     respose_dict={'status':status,'error_msg':error_msg,'response':'Chur prediction completed'}
                     timestr = time.strftime("%Y%m%d-%H%M%S")
-                    path=f'./Prediction/submission_telecom_case_study_test{timestr}.csv'
+                    path=f'./submission_telecom_case_study_test{timestr}.csv'
                     response = HttpResponse(content_type='text/csv')
                     response['Content-Disposition'] = 'attachment; filename='+os.path.basename(path) 
                     # Name the CSV response
                     final_df.to_csv(path_or_buf=response, encoding='utf-8', index=False)
+                    removeFolder("./Prediction")
                     return response
                 else:
                      error_msg = "Please upload csv file"
@@ -285,15 +300,16 @@ class SummaryModel(APIView):
               if serializer.is_valid():
                    file= request.FILES.getlist('file')
                    data=pdfSummaryService.pdfSummary(file)
-                   print(data)
                    error_msg = ""
                    respose_dict={'status':status.HTTP_200_OK,'error_msg':error_msg,"pdf-summary":data}
+                   removeFolder("./content")
                    return JsonResponse(respose_dict)
               return Response(
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
              )
         except Exception as e:
+            removeFolder("./content")
             error_msg=str(e)  
             translation=""
             respose_dict={'status':status.HTTP_400_BAD_REQUEST ,'error_msg':error_msg,"pdf-summary":""}

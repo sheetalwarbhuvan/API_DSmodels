@@ -30,7 +30,7 @@ class DocumentCreation(APIView):
                 response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
                 response['Content-Disposition'] = 'attachment; filename=download.docx'
                 doc.save(response)
-                doc.save(path)
+                leagalService.removeFolder("./Legal_Output")
                 return response
             else:
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) #when serializer is not valid
@@ -58,8 +58,12 @@ class GoldContract(APIView):
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                     file= request.FILES.getlist('file')
-                    result=leagalService.goldContract(file).to_json(orient='records')
-                    return JsonResponse(json.loads(result), safe = False)
+                    result=leagalService.goldContract(file)
+                    response = HttpResponse(content_type='text/csv')
+                    print(type(result))
+                    response['Content-Disposition'] = 'attachment; filename=goldCotract.csv'
+                    result.to_csv(path_or_buf=response, encoding='utf-8', index=False)
+                    return response
                     # respose_dict={'status':status.HTTP_200_OK,'error_msg':""}
                     # return JsonResponse(respose_dict)
                 

@@ -1,5 +1,6 @@
  
 from re import A
+import shutil
 from docx import Document
 from datetime import datetime
 
@@ -29,6 +30,14 @@ from langchain_community.document_loaders import PyPDFLoader
 import re
 from langchain.schema.output import LLMResult
 from transformers import T5Tokenizer, T5ForConditionalGeneration,AutoTokenizer
+import torch
+
+def checkGPUAvailability():
+       x = torch.randn(3, 3)
+       device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+       x = x.to(device)
+       print(f"Using device: {device}")
+                
 
 
 # Function to generate "Statement of Work" text based on user inputs
@@ -234,7 +243,6 @@ def goldContract(file):
             results_table_data.append((question, response, suggestion))
 
     results_df = pd.DataFrame(results_table_data, columns=["Clause", "Is it in PDF or not?", "Suggestion"])
-    print(results_df)
     return results_df
     
 
@@ -373,3 +381,17 @@ def get_conversation_chain(persisted_vectorstore):
         memory=memory
     )
     return conversation_chain
+
+
+def removeFolder(folder):
+     if os.path.exists(folder):
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+        shutil.rmtree(folder)
