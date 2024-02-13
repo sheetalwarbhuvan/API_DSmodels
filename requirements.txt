@@ -23,3 +23,5 @@ sentence-transformers==2.2.2
 pymupdf
 pypdf
 altair==4.1.0
+drf_spectacular
+drf_spectacular_sideca
